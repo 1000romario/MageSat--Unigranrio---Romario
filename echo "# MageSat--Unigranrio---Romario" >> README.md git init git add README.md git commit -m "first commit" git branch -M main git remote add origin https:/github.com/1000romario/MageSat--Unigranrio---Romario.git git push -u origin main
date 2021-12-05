@@ -1,0 +1,69 @@
+int BIN_GAS, BIN_PIEZO, BIN_TRIG, BIN_ECHO, BIN_SW2000;
+float gas, tempo, inclinacao, distancia;
+
+void setup(){
+  Serial.begin(9600);
+  
+  pinMode(12, OUTPUT); 
+  pinMode(11, INPUT ); 
+  pinMode(BIN_SW2000, INPUT);
+}
+
+void loop(){
+  BIN_GAS = analogRead(A0);
+  BIN_PIEZO = 13;
+  BIN_TRIG = 12;
+  BIN_ECHO = 11;
+  BIN_SW2000 = 7;
+  
+  //--------------------------------------------------------//
+  
+  digitalWrite(BIN_TRIG,LOW);
+  delayMicroseconds(2);
+  digitalWrite(BIN_TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(BIN_TRIG, LOW);
+  
+  //--------------------------------------------------------//
+  
+  inclinacao = digitalRead(BIN_SW2000);
+  
+  // Definindo o valor da distância do chão (cm)
+  tempo = pulseIn(BIN_ECHO, HIGH);
+  distancia = 0.01715 * tempo;
+  
+  // Definindo o valor da poluição do ar (PPM)
+  gas = BIN_GAS;
+  
+  //--------------------------------------------------------//
+  
+  // Exibindo os valores no serial
+  Serial.print("PPM: ");
+  Serial.println(gas);
+  
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+  
+  Serial.println();
+  Serial.println("//--------------------------------------------------------//");
+  Serial.println();
+  
+  //--------------------------------------------------------//
+  
+  // Acionando o alarme se o dispositivo estiver inclinado
+  if (inclinacao == HIGH){
+    tone(BIN_PIEZO, 2000, 2000);
+    Serial.println(" **Inclinado** ");
+  } else {
+    noTone(BIN_PIEZO);
+  }
+  
+  // Acionando o alarme se a quantidade de PPM estiver alta
+  if (gas > 150){
+    tone(BIN_PIEZO, 1000, 1000);
+    delay(1000);
+  } else {
+    noTone(BIN_PIEZO);
+  }
+}
